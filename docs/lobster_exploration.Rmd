@@ -1,0 +1,115 @@
+---
+title: "Lobster Exploration"
+author: "Rachel Swick"
+date: "2024-08-19"
+output: html_document
+---
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+```
+
+
+```{r}
+lobster_data <- read_csv(here::here("data",
+                                    "Lobster_Abundance_All_Years_20210412.csv"), 
+                         na = c("-99999", "")) |>
+  clean_names() |>
+  uncount(count)
+```
+
+```{r}
+lobster_summary <- lobster_data |>
+  group_by(site, year) |>
+  summarize(lobster_count = n(), mean_lobster_sizes = mean(size_mm, na.rm = TRUE)) 
+```
+
+```{r}
+ggplot(data = lobster_summary, aes(x = year, 
+                                   y = lobster_count, 
+                                   color = site))+
+  geom_point(show.legend = FALSE)
+```
+
+```{r}
+lobster_2020 <- lobster_data |>
+  dplyr::filter(year == 2020)
+
+lobster_2020_count <- lobster_2020 |> 
+  mutate(legal_not_legal = case_when(size_mm < 79.76 ~ "no",
+                            size_mm >= 79.76 ~ "yes", .default = "no")) |>
+  group_by(site) |>
+  dplyr::count(legal_not_legal) |>
+  rename(number_lobsters = "n")
+
+ggplot(data = lobster_2020_count, aes(x = site, y = number_lobsters, fill = legal_not_legal))+
+  geom_col(position = "fill")
+  
+```
+
+```{r}
+lobster_subset <- lobster_data |>
+  dplyr::filter(site %in% c("IVEE", "CARP", "NAPL"))
+```
+
+```{r}
+lobster_august <- lobster_data |>
+  dplyr::filter(month == 8)
+```
+
+```{r}
+lobster_oddball <- lobster_data |>
+  dplyr::filter(site == "AQUE" | size_mm > 70)
+```
+
+```{r}
+lobster_no_naples <- lobster_data |>
+  dplyr::filter(site != "NAPL")
+```
+
+```{r}
+lobster_practice <- lobster_data |>
+  group_by(site) |>
+  summarize(lobster_mean = mean(size_mm, na.rm = TRUE), 
+            lobster_sd = sd(size_mm, na.rm = TRUE))
+```
+
+```{r}
+lobster_math <- lobster_data |>
+  group_by(site, month)|>
+  summarize(lobster_max = max(size_mm, na.rm = TRUE))
+```
+
+```{r}
+lobster_conversion <- lobster_data |>
+  mutate(size_cm = size_mm * 10)
+
+lobster_lowercase <- lobster_data |>
+  mutate(site = tolower(site))
+
+lobster_convert <- lobster_data |>
+  mutate(area = as.character(area))
+```
+
+```{r}
+lobster_case <- lobster_data |>
+  mutate(size_bin = case_when(size_mm <= 70 ~ "small",
+                              size_mm > 70 ~ "large",
+                              .default = NA))
+
+lobster_cases <- lobster_data |>
+  mutate(designation = case_when(site == "IVEE" | site == "NAPL" ~ "MPA",
+                                 .default = "not MPA"))
+```
+
+
+
+
+
+
+
+
+
+
+
